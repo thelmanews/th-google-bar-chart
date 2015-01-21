@@ -15,7 +15,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -34,17 +34,18 @@ A Thelma component providing solution to no problem in particular.
   <script>
 // TODO 
 // - accept array of arrays as input, and get attributes accordingly
-// 
+// - integrate data utility to convert strings
+// - integrate data utility to detect numerical column
 
 
     Polymer({
       // selectedLabel: "Year",
       // selectedValues: ["Sales","Profit"],
-      chartData: [
-        {"Year": "2014", "Sales": 100, "Profit": 50},
-        {"Year": "2015", "Sales": 50, "Profit": 40},
-        {"Year": "2016", "Sales": 300, "Profit": 200}
-      ],
+      // chartData: [
+      //   {"Year": "2014", "Sales": 100, "Profit": 50},
+      //   {"Year": "2015", "Sales": 50, "Profit": 40},
+      //   {"Year": "2016", "Sales": 300, "Profit": 200}
+      // ],
       // chartData: [
       //   ["Year", "Sales","Profit"],
       //   ["2014", 100, 50],
@@ -53,14 +54,18 @@ A Thelma component providing solution to no problem in particular.
       // ],
       orientation: "horizontal",
       legend: true,
-      ready: function () {
+      inputChanged: function () {
         var self = this;
+        self.chartData = self.input;
         self.dataAttributes = Object.keys(self.chartData[0]);
         self.getDefaultSelections();
         self.reformatData();
         self.configureOptions();
+        console.log("chart ready")
       },
       getDefaultSelections: function(){
+        console.log("get selections")
+        console.log(this.chartData);
         var self = this;
         self.selectedLabel = self.selectedLabel || Object.keys(self.chartData[0])[0];
         self.selectedValues = self.selectedValues || Object.keys(self.chartData[0]).splice(1);
@@ -73,6 +78,7 @@ A Thelma component providing solution to no problem in particular.
        * 'reformatData' converts chartData into the correct data structure for the map
        */
       reformatData: function(){
+        console.log("reformat data")
         var self = this; 
         var firstRow = self.selectedValues.map(function(item){ return item;}) ;
         
@@ -94,12 +100,14 @@ A Thelma component providing solution to no problem in particular.
        * @return {[type]} [description]
        */
       updateData: function() {
+        console.log("update data")
         this.reformatData();
       },
       /**
        * 'configureOptions' sets the appropriate options properties for the map, given the attribute values
        */
       configureOptions: function(){
+        console.log("options")
         var self = this,
             colors =  self.getColors();
         
