@@ -1,0 +1,167 @@
+<link rel="import" href="../polymer/polymer.html"> 
+<link rel="import" href="../th-d3-chart/th-d3-chart.html"> 
+<link rel="import" href="../google-chart/google-chart.html">
+
+<!--
+A Thelma component providing solution to no problem in particular.
+
+##### Example
+
+    <th-google-bar-chart></th-google-bar-chart>
+
+@element th-google-bar-chart
+@blurb Element providing solution to no problem in particular.
+@status alpha
+@homepage http://nishacodes.github.io/th-google-bar-chart
+-->
+
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation">
+  <template>
+    <core-style ref="theme"></core-style>
+    <link rel="stylesheet" href="th-google-bar-chart.css">
+    <div class="columnNames">
+      Values: 
+      <template repeat="{{attr in dataAttributes}}">
+        <span class="columnName {{attr | checkIfSelected}}" on-click="{{toggleSelected}}">{{attr}}</span>
+      </template>
+    </div>
+    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
+          type='column'
+          options= "{{options}}"
+          data="{{_data}}">
+    </google-chart>
+  </template>
+  <script>
+// TODO 
+// - accept array of arrays as input, and get attributes accordingly
+// 
+
+
+    Polymer({
+      // selectedLabel: "Year",
+      // selectedValues: ["Sales","Profit"],
+      chartData: [
+        {"Year": "2014", "Sales": 100, "Profit": 50},
+        {"Year": "2015", "Sales": 50, "Profit": 40},
+        {"Year": "2016", "Sales": 300, "Profit": 200}
+      ],
+      // chartData: [
+      //   ["Year", "Sales","Profit"],
+      //   ["2014", 100, 50],
+      //   ["2015", 50, 40],
+      //   ["2016", 300, 200]
+      // ],
+      orientation: "horizontal",
+      legend: true,
+      ready: function () {
+        var self = this;
+        self.dataAttributes = Object.keys(self.chartData[0]);
+        self.getDefaultSelections();
+        self.reformatData();
+        self.configureOptions();
+      },
+      getDefaultSelections: function(){
+        var self = this;
+        self.selectedLabel = self.selectedLabel || Object.keys(self.chartData[0])[0];
+        self.selectedValues = self.selectedValues || Object.keys(self.chartData[0]).splice(1);
+
+        console.log(self.selectedLabel);
+        console.log(self.selectedValues);
+
+      },
+      /**
+       * 'reformatData' converts chartData into the correct data structure for the map
+       */
+      reformatData: function(){
+        var self = this; 
+        var firstRow = self.selectedValues.map(function(item){ return item;}) ;
+        
+        self._data = self.chartData.map(function(item){
+          var row = [];
+          row.push(item[self.selectedLabel]);
+          for(var i=0; i<self.selectedValues.length; i++){
+            row.push(item[self.selectedValues[i]]);
+          }
+          return row;
+        });
+
+        firstRow.unshift(self.selectedLabel);
+        self._data.unshift(firstRow);
+
+      },
+      /**
+       * Overrides th-d3-chart function. called by observers when input or chartData changes
+       * @return {[type]} [description]
+       */
+      updateData: function() {
+        this.reformatData();
+      },
+      /**
+       * 'configureOptions' sets the appropriate options properties for the map, given the attribute values
+       */
+      configureOptions: function(){
+        var self = this,
+            colors =  self.getColors();
+        
+        // Define chart options 
+        self.options = {
+          orientation: self.orientation,
+          colors: colors.accents,
+          backgroundColor: self.backgroundColor || "none",
+          legend: { 
+            position: "bottom",
+            alignment: "center",
+            numberFormat: self.numberFormat,
+            textStyle: { 
+              // color: colors.theme.foreground1, 
+              fontName: colors.theme.font, 
+              fontSize: '0.85em',
+              stroke: 'none',
+              strokeWidth: '0'            
+            } 
+          }
+        };
+
+        if (!self.legend) { self.options.legend = 'none';}
+        
+      },
+      reset: function(){
+        // Reset is a method inherited from the 'th-animated' Thelma component.
+        // You can include code that takes the component back to the pre-animated state.
+
+      },
+      getColors: function(){
+        colors = {};
+        colors.theme = window.CoreStyle.g.theme;
+        colors.accents = [];
+
+        for (var color in colors.theme){
+          if(/^accent/.test(color)){
+            colors.accents.push(colors.theme[color]);
+          }
+        }
+
+        colors.count = colors.accents.length;
+
+        return colors;
+      },
+      checkIfSelected: function(value){
+        var self = this;
+        if (self.selectedValues.indexOf(value) > -1){
+          return "selected";
+        } else {
+          return;
+        }
+      },
+      toggleSelected: function(e, detail, selection){
+        var self = this;
+        selection.classList.toggle('selected');
+        // TODO: this can be refactored... selected class is being handled in checkIfSelected filter
+        var selected = self.shadowRoot.querySelectorAll('.selected');
+        self.selectedValues = [].map.call(selected, function(item) { return item.textContent});
+        console.log(self.selectedValues);
+        self.reformatData();
+      },
+    });
+  </script>
+</polymer-element>
