@@ -24,14 +24,14 @@ A Thelma component providing solution to no problem in particular.
     <template if="{{dataAttributes}}">
       <div class="columnNames">
         <div>
-          Label: 
+           Label:  
           <template repeat="{{attr in dataAttributes}}">
-            <span class="columnName label {{attr | checkIfSelectedLabel}}" on-click="{{toggleSelectedLabel}}">{{attr}}</span>
+            <span class="columnName datalabel {{attr | checkIfSelectedLabel}}" on-click="{{toggleSelectedLabel}}">{{attr}}</span>
           </template>
         </div>
         <br>
         <div>
-          Values: 
+          Value: 
           <template repeat="{{attr in dataAttributes}}">
             <span class="columnName {{attr | checkIfSelectedValue}}" on-click="{{toggleSelectedValues}}">{{attr}}</span>
           </template>
@@ -198,7 +198,7 @@ A Thelma component providing solution to no problem in particular.
       },
       toggleSelectedLabel: function(e, detail, selection){
         var self = this;
-        var labels = self.shadowRoot.querySelectorAll('.label');
+        var labels = self.shadowRoot.querySelectorAll('.datalabel');
         [].forEach.call(labels, function(item){ item.classList.remove('selectedLabel')});
         selection.classList.toggle('selectedLabel');
         // TODO: this can be refactored... selected class is being handled in checkIfSelected filter
