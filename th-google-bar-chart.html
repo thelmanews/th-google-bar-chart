@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html"> 
 <link rel="import" href="../th-d3-chart/th-d3-chart.html"> 
 <link rel="import" href="../google-chart/google-chart.html">
+<link rel="import" href="../th-data-utility/th-data-utility.html">
 
 <!--
 A Thelma component providing solution to no problem in particular.
@@ -19,6 +20,7 @@ A Thelma component providing solution to no problem in particular.
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
+    <th-data-utility id="utility"></th-utility>
     <div class="columnNames">
       Values: 
       <template repeat="{{attr in dataAttributes}}">
@@ -56,22 +58,20 @@ A Thelma component providing solution to no problem in particular.
       legend: true,
       inputChanged: function () {
         var self = this;
+        console.log("bar chart ready");
         self.chartData = self.input;
         self.dataAttributes = Object.keys(self.chartData[0]);
         self.getDefaultSelections();
         self.reformatData();
         self.configureOptions();
-        console.log("chart ready")
+        
       },
       getDefaultSelections: function(){
         console.log("get selections")
-        console.log(this.chartData);
+        
         var self = this;
         self.selectedLabel = self.selectedLabel || Object.keys(self.chartData[0])[0];
         self.selectedValues = self.selectedValues || Object.keys(self.chartData[0]).splice(1);
-
-        console.log(self.selectedLabel);
-        console.log(self.selectedValues);
 
       },
       /**
@@ -86,7 +86,10 @@ A Thelma component providing solution to no problem in particular.
           var row = [];
           row.push(item[self.selectedLabel]);
           for(var i=0; i<self.selectedValues.length; i++){
-            row.push(item[self.selectedValues[i]]);
+            
+            var unformattedValue = self.$.utility.unformatString(item[self.selectedValues[i]]);
+            console.log(unformattedValue);
+            row.push(unformattedValue);
           }
           return row;
         });
@@ -127,6 +130,9 @@ A Thelma component providing solution to no problem in particular.
               stroke: 'none',
               strokeWidth: '0'            
             } 
+          },
+          vAxis: {
+            format: "#,###.##" //TODO: add more options here and figure out how to format numbers in tooltips
           }
         };
 
