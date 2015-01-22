@@ -3,6 +3,7 @@
   color: black;
   width: 500px;
   height: 500px;
+  margin-bottom: 50px;
 }
 .columnNames {
   margin: 0px auto;
@@ -19,7 +20,8 @@
   cursor: pointer;
 }
 
-.selected {
+.selected, .selectedValue, .selectedLabel {
   background-color: #ccc;
   color: white;
+
 }
