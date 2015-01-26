@@ -2,6 +2,7 @@
 <link rel="import" href="../th-d3-chart/th-d3-chart.html"> 
 <link rel="import" href="../google-chart/google-chart.html">
 <link rel="import" href="../th-data-utility/th-data-utility.html">
+<link rel="import" href="../th-u-data-selector/th-u-data-selector.html">
 
 <!--
 A Thelma component providing solution to no problem in particular.
@@ -20,24 +21,10 @@ A Thelma component providing solution to no problem in particular.
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
-    <th-data-utility id="utility"></th-utility>
-    <template if="{{dataAttributes}}">
-      <div class="columnNames">
-        <div>
-           Label:  
-          <template repeat="{{attr in dataAttributes}}">
-            <span class="columnName datalabel {{attr | checkIfSelectedLabel}}" on-click="{{toggleSelectedLabel}}">{{attr}}</span>
-          </template>
-        </div>
-        <br>
-        <div>
-          Value: 
-          <template repeat="{{attr in dataAttributes}}">
-            <span class="columnName {{attr | checkIfSelectedValue}}" on-click="{{toggleSelectedValues}}">{{attr}}</span>
-          </template>
-        </div>
-      </div>
-    </template>
+    <th-data-utility id="utility"></th-data-utility>
+
+    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}"></th-u-data-selector>
+
     <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 85%;"
           type='column'
           options= "{{options}}"
@@ -66,48 +53,58 @@ A Thelma component providing solution to no problem in particular.
       //   ["2016", 300, 200]
       // ],
       orientation: "horizontal",
+      labelValueSelection: null,
       legend: true,
+
+      ready : function() {
+        //this._configureOptions();
+        this.reformatData();
+        this.$.data_selector.addEventListener('th-data-selection-changed', function() {
+
+          this.labelValueSelection = this.$.data_selector.selections;
+          this.reformatData();
+
+        }.bind(this));
+        
+      },
+
       inputChanged: function () {
         var self = this;
-        console.log("bar chart ready");
         self.chartData = self.input;
         self.dataAttributes = Object.keys(self.chartData[0]);
-        self.getDefaultSelections();
         self.reformatData();
         self.configureOptions();
         
-      },
-      getDefaultSelections: function(){
-        console.log("get selections")
-        
-        var self = this;
-        self.selectedLabel = self.selectedLabel || Object.keys(self.chartData[0])[0];
-        self.selectedValues = self.selectedValues || Object.keys(self.chartData[0]).splice(1);
-
       },
       /**
        * 'reformatData' converts chartData into the correct data structure for the map
        */
       reformatData: function(){
-        console.log("reformat data")
         var self = this; 
-        var firstRow = self.selectedValues.map(function(item){ return item;}) ;
+
+        console.log("reformat data", self.labelValueSelection);
+
+        if(!self.labelValueSelection || !self.labelValueSelection[0] || !self.labelValueSelection[1]) {
+          return;
+        }
+        var firstRow = self.labelValueSelection[1].map(function(item){ return item;}) ;
         
         self._data = self.chartData.map(function(item){
           var row = [];
-          row.push(item[self.selectedLabel]);
-          for(var i=0; i<self.selectedValues.length; i++){
+          row.push(item[self.labelValueSelection[0]]);
+          for(var i=0; i<self.labelValueSelection[1].length; i++){
             
-            var unformattedValue = self.$.utility.unformatString(item[self.selectedValues[i]]);
+            var unformattedValue = self.$.utility.unformatString(item[self.labelValueSelection[1][i]]);
             console.log(unformattedValue);
             row.push(unformattedValue);
           }
           return row;
         });
 
-        firstRow.unshift(self.selectedLabel);
+        firstRow.unshift(self.labelValueSelection[0]);
         self._data.unshift(firstRow);
 
+       
       },
       /**
        * Overrides th-d3-chart function. called by observers when input or chartData changes
@@ -130,7 +127,7 @@ A Thelma component providing solution to no problem in particular.
           orientation: self.orientation,
           colors: colors.accents,
           backgroundColor: self.backgroundColor || "none",
-          animation: {duration: "1000"},
+          animation: {duration: "500"},
           legend: { 
             position: "bottom",
             alignment: "center",
@@ -171,42 +168,11 @@ A Thelma component providing solution to no problem in particular.
 
         return colors;
       },
-      checkIfSelectedValue: function(value){
-        var self = this;
-        if (self.selectedValues.indexOf(value) > -1){
-          return "selectedValue";
-        } else {
-          return;
-        }
-      },
-      checkIfSelectedLabel: function(value){
-        var self = this;
-        if (self.selectedLabel == value){
-          return "selectedLabel";
-        } else {
-          return;
-        }
-      },
-      toggleSelectedValues: function(e, detail, selection){
-        var self = this;
-        selection.classList.toggle('selectedValue');
-        // TODO: this can be refactored... selected class is being handled in checkIfSelected filter
-        var selected = self.shadowRoot.querySelectorAll('.selectedValue');
-        self.selectedValues = [].map.call(selected, function(item) { return item.textContent});
-        console.log(self.selectedValues);
-        self.reformatData();
-      },
-      toggleSelectedLabel: function(e, detail, selection){
-        var self = this;
-        var labels = self.shadowRoot.querySelectorAll('.datalabel');
-        [].forEach.call(labels, function(item){ item.classList.remove('selectedLabel')});
-        selection.classList.toggle('selectedLabel');
-        // TODO: this can be refactored... selected class is being handled in checkIfSelected filter
-        var selected = self.shadowRoot.querySelectorAll('.selectedLabel');
-        self.selectedLabel = selection.textContent;
-        // console.log(self.selectedValues);
-        self.reformatData();
+      resize: function() {
+        this.$.googleChart.drawChart();
       }
+
+
     });
   </script>
 </polymer-element>
