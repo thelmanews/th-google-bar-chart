@@ -82,7 +82,6 @@ A Thelma component providing solution to no problem in particular.
       reformatData: function(){
         var self = this; 
 
-        console.log("reformat data", self.labelValueSelection);
 
         if(!self.labelValueSelection || !self.labelValueSelection[0] || !self.labelValueSelection[1]) {
           return;
@@ -93,9 +92,7 @@ A Thelma component providing solution to no problem in particular.
           var row = [];
           row.push(item[self.labelValueSelection[0]]);
           for(var i=0; i<self.labelValueSelection[1].length; i++){
-            
             var unformattedValue = self.$.utility.unformatString(item[self.labelValueSelection[1][i]]);
-            console.log(unformattedValue);
             row.push(unformattedValue);
           }
           return row;
@@ -111,14 +108,12 @@ A Thelma component providing solution to no problem in particular.
        * @return {[type]} [description]
        */
       updateData: function() {
-        console.log("update data")
         this.reformatData();
       },
       /**
        * 'configureOptions' sets the appropriate options properties for the map, given the attribute values
        */
       configureOptions: function(){
-        console.log("options")
         var self = this,
             colors =  self.getColors();
         
