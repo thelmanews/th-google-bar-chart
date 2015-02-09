@@ -17,14 +17,14 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend thelma">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
     <th-data-utility id="utility"></th-data-utility>
-
-    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}"></th-u-data-selector>
-
+    <template if="{{!thelma}}">
+      <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}"></th-u-data-selector>
+    </template>
     <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 85%;"
           type='column'
           options= "{{options}}"
@@ -52,24 +52,37 @@ A Thelma component providing solution to no problem in particular.
       //   ["2015", 50, 40],
       //   ["2016", 300, 200]
       // ],
+      // 
+      series1Name: 'profit',
+      series2Name: 'sales',
+      labelName: 'year',
+      chartData: [
+        {"label": "2014", "series1": 100, "series2": 50},
+        {"label": "2015", "series1": 50, "series2": 40},
+        {"label": "2016", "series1": 300, "series2": 200}
+      ],
       orientation: "horizontal",
       labelValueSelection: null,
       legend: true,
+      thelma: true, 
 
       ready : function() {
-        //this._configureOptions();
-        this.reformatData();
-        this.$.data_selector.addEventListener('th-data-selection-changed', function() {
-          
-          this.labelValueSelection = this.$.data_selector.selections;
-          //set published selections for saving the component
-          this.selectedLabel = this.labelValueSelection[0];
-          this.selectedValues = this.labelValueSelection[1];
+        this.configureOptions();
+        if (this.thelma){
+          this.reformatDataThelma();
+        } else {
           this.reformatData();
-          
+          this.$.data_selector.addEventListener('th-data-selection-changed', function() {
+            
+            this.labelValueSelection = this.$.data_selector.selections;
+            //set published selections for saving the component
+            this.selectedLabel = this.labelValueSelection[0];
+            this.selectedValues = this.labelValueSelection[1];
+            this.reformatData();
+            
 
-        }.bind(this));
-        
+          }.bind(this));
+        }
       },
 
 
@@ -89,8 +102,13 @@ A Thelma component providing solution to no problem in particular.
       inputChanged: function () {
         var self = this;
         self.chartData = self.input;
-        self.reformatData();
         self.configureOptions();
+        if (self.thelma){
+          self.reformatDataThelma();
+        } else {
+          self.reformatData();
+        }
+        
         
       },
       /**
@@ -98,7 +116,6 @@ A Thelma component providing solution to no problem in particular.
        */
       reformatData: function(){
         var self = this; 
-
 
         if(!self.labelValueSelection || !self.labelValueSelection[0] || !self.labelValueSelection[1]) {
           return;
@@ -119,6 +136,44 @@ A Thelma component providing solution to no problem in particular.
         self._data.unshift(firstRow);
 
        
+      },
+
+      /**
+       * 'reformatDataThelma' converts chartData into the correct data structure using Thelma-composer specific attrs
+       */
+      reformatDataThelma: function(){
+        var self = this; 
+        var seriesNames = [self.series1Name, self.series2Name, self.series3Name];
+        self.labelValueSelection = [self.labelName, [self.series1Name]];
+
+        
+        if (self.series2Name && self.series2Name.length > 0 && self.chartData[0].series2){
+          var series2 = true;
+          self.labelValueSelection[1].push(self.series2Name);
+        }
+        if (self.series3Name && self.series3Name.length > 0 && self.chartData[0].series3){
+          var series3 = true;
+          self.labelValueSelection[1].push(self.series3Name);
+        }
+
+        var firstRow = self.labelValueSelection[1].map(function(item){ return item;}) ;
+        firstRow.unshift(self.labelValueSelection[0]);
+
+        self._data = self.chartData.map(function(item){
+          var row = [];
+          row.push(item.label);
+          row.push(self.$.utility.unformatString(item.series1));
+          if (series2){
+            var series2val = item.series2 ? self.$.utility.unformatString(item.series2) : "";
+            row.push(series2val);
+          }
+          if (series3){
+           row.push(self.$.utility.unformatString(item.series3)); 
+          }
+
+          return row;
+        });
+        self._data.unshift(firstRow);       
       },
       /**
        * Overrides th-d3-chart function. called by observers when input or chartData changes
