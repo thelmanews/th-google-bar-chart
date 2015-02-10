@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -48,8 +48,8 @@ A Thelma component providing solution to no problem in particular.
       // ],
       // 
       gridlines: 5,
-      series1Name: 'profit',
-      series2Name: 'sales',
+      series1Name: 'Germany',
+      series2Name: 'France',
       labelName: 'year',
       chartData: [
         {"label": "2014", "series1": 100, "series2": 50},
@@ -250,6 +250,15 @@ A Thelma component providing solution to no problem in particular.
       },
       resize: function() {
         this.$.googleChart.drawChart();
+      },
+      series1NameChanged: function(){
+        this.reformatDataThelma();
+      },
+      series2NameChanged: function(){
+        this.reformatDataThelma();
+      },
+      series3NameChanged: function(){
+        this.reformatDataThelma();
       }
 
 
