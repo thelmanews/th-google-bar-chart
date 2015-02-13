@@ -17,14 +17,12 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
     <th-data-utility id="utility"></th-data-utility>
-
-    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}"></th-u-data-selector>
-
+    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}" style="display: {{showOptions | displayFilter}};"></th-u-data-selector>
     <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 85%;"
           type='column'
           options= "{{options}}"
@@ -55,43 +53,34 @@ A Thelma component providing solution to no problem in particular.
       orientation: "horizontal",
       labelValueSelection: null,
       legend: true,
-
+      showOptions: true,
       ready : function() {
+        this.dataSelector = this.$.data_selector;
+
         //this._configureOptions();
         this.reformatData();
-        this.$.data_selector.addEventListener('th-data-selection-changed', function() {
-          
-          this.labelValueSelection = this.$.data_selector.selections;
+
+        this.dataSelector.addEventListener('th-data-selection-changed', function() {
+          this.labelValueSelection = this.dataSelector.selections;
           //set published selections for saving the component
           this.selectedLabel = this.labelValueSelection[0];
           this.selectedValues = this.labelValueSelection[1];
           this.reformatData();
-          
-
         }.bind(this));
-        
       },
-
-
       selectedLabelChanged: function() {
-          //if selectedLabel changed from outside, set the internal data_selector
-          this.$.data_selector.selections[0] = this.selectedLabel;
-
+        //if selectedLabel changed from outside, set the internal data_selector    
+        this.dataSelector.selections[0] = this.selectedLabel;
       },
-
       selectedValuesChanged: function() {
-          //if selectedValue changed from outside, set the internal data_selector
-          this.$.data_selector.selections[1] = this.selectedValues;
-
+        //if selectedValue changed from outside, set the internal data_selector
+        this.dataSelector.selections[1] = this.selectedValues;
       },
-
-
       inputChanged: function () {
         var self = this;
         self.chartData = self.input;
         self.reformatData();
         self.configureOptions();
-        
       },
       /**
        * 'reformatData' converts chartData into the correct data structure for the map
@@ -182,6 +171,9 @@ A Thelma component providing solution to no problem in particular.
       },
       resize: function() {
         this.$.googleChart.drawChart();
+      },
+      displayFilter: function(value){
+        return value ? "inline-block" : "none";
       }
 
 
