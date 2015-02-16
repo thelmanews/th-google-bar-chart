@@ -7,7 +7,8 @@
     "th-animated": "thelmanews/th-d3-chart", 
     "th-theme": "thelmanews/th-theme",
     "polymer": "Polymer/polymer#~0.5.1",
-    "th-u-data-selector": "thelmanews/th-u-data-selector"
+    "th-u-data-selector": "thelmanews/th-u-data-selector",
+    "th-data-utility": "thelmanews/th-data-utility"
   }
 }
 
