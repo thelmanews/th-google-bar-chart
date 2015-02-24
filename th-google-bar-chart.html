@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -125,6 +125,8 @@ A Thelma component providing solution to no problem in particular.
         
         // Define chart options 
         self.options = {
+          title: self.chartTitle,
+          subtitle: self.chartSubtitle, // Not an option? Does not work
           orientation: self.orientation,
           colors: colors.accents,
           backgroundColor: self.backgroundColor || "none",
@@ -132,7 +134,6 @@ A Thelma component providing solution to no problem in particular.
           legend: { 
             position: "bottom",
             alignment: "center",
-            numberFormat: self.numberFormat,
             textStyle: { 
               // color: colors.theme.foreground1, 
               fontName: colors.theme.font, 
@@ -142,7 +143,16 @@ A Thelma component providing solution to no problem in particular.
             } 
           },
           vAxis: {
-            format: "#,###.##" //TODO: add more options here and figure out how to format numbers in tooltips
+            format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
+            gridlines: {
+              count: self.gridlines,
+            }
+          },
+          hAxis: {
+            format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
+            gridlines: {
+              count: self.gridlines,
+            }
           }
         };
 
@@ -174,8 +184,41 @@ A Thelma component providing solution to no problem in particular.
       },
       displayFilter: function(value){
         return value ? "inline-block" : "none";
+      },
+      getMetaData: function(){
+        return {
+          "name": "th-google-bar-chart",
+          "description": "Multi Bar Chart by Google",
+          "category":"chart",
+          "version": "0.0.1",
+          "inputAttr": {
+            "chartTitle":{"friendly":"Title", "type":"string", "default":""},
+            "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
+            "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
+            "legend":{"friendly":"Show Legend?", "type":"boolean", "default": true}
+          }
+        }
+      },
+      legendChanged: function(){
+        this.configureOptions();
+        this.$.googleChart.drawChart();
+      },
+      orientationChanged: function(){
+        this.configureOptions();
+        this.$.googleChart.drawChart();
+      },
+      gridlinesChanged: function(){
+        this.configureOptions();
+        this.$.googleChart.drawChart();
+      },
+      chartTitleChanged: function(){
+        this.configureOptions();
+        this.$.googleChart.drawChart();
+      },
+      chartSubtitleChanged: function(){
+        this.configureOptions();
+        this.$.googleChart.drawChart();
       }
-
 
     });
   </script>
