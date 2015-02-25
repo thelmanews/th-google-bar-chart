@@ -53,7 +53,7 @@ A Thelma component providing solution to no problem in particular.
       orientation: "horizontal",
       labelValueSelection: null,
       legend: true,
-      showOptions: true,
+      showOptions: false,
       observe: {
         legend: "updateOptions",
         orientation: "updateOptions",
@@ -202,6 +202,13 @@ A Thelma component providing solution to no problem in particular.
         return value ? "inline-block" : "none";
       },
       getMetaData: function(){
+        var self = this;
+        var labelCols = self.dataSelector._dataAttributes;
+        var valueCols = labelCols.filter(function(attr, index){
+          return self.dataSelector.isNumerical(attr);
+        })
+
+        console.log(valueCols[0]);
         return {
           "name": "th-google-bar-chart",
           "description": "Multi Bar Chart by Google",
@@ -209,6 +216,8 @@ A Thelma component providing solution to no problem in particular.
           "version": "0.0.1",
           "inputAttr": {
             "chartTitle":{"friendly":"Title", "type":"string", "default":""},
+            "selectedLabel":{"friendly":"X Values", "type": "single-select", "default": labelCols[0], "values":labelCols},
+            "selectedValues":{"friendly":"Y Values", "type": "multi-select", "default": [], "values":valueCols},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
             "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
