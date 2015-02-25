@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -146,13 +146,17 @@ A Thelma component providing solution to no problem in particular.
             format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
             gridlines: {
               count: self.gridlines,
-            }
+            },
+            minValue: self.orientation === "horizontal" ? self.yAxisMin : "automatic",
+            maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic"
           },
           hAxis: {
             format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
             gridlines: {
               count: self.gridlines,
-            }
+            },
+            minValue: self.orientation === "vertical" ? self.yAxisMin : "automatic",
+            maxValue: self.orientation === "vertical" ? self.yAxisMax : "automatic"
           }
         };
 
@@ -193,8 +197,10 @@ A Thelma component providing solution to no problem in particular.
           "version": "0.0.1",
           "inputAttr": {
             "chartTitle":{"friendly":"Title", "type":"string", "default":""},
-            "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
+            "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
+            "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
+            "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
             "legend":{"friendly":"Show Legend?", "type":"boolean", "default": true}
           }
         }
@@ -215,7 +221,11 @@ A Thelma component providing solution to no problem in particular.
         this.configureOptions();
         this.$.googleChart.drawChart();
       },
-      chartSubtitleChanged: function(){
+      yAxisMinChanged: function(){
+        this.configureOptions();
+        this.$.googleChart.drawChart();
+      },
+      yAxisMaxChanged: function(){
         this.configureOptions();
         this.$.googleChart.drawChart();
       }
