@@ -17,13 +17,13 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax backgroundColor">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
     <th-data-utility id="utility"></th-data-utility>
     <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}" style="display: {{showOptions | displayFilter}};"></th-u-data-selector>
-    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 85%;"
+    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
           type='column'
           options= "{{options}}"
           data="{{_data}}">
@@ -53,12 +53,13 @@ A Thelma component providing solution to no problem in particular.
       orientation: "horizontal",
       labelValueSelection: null,
       legend: true,
-      showOptions: false,
+      showOptions: true,
       observe: {
         legend: "updateOptions",
         orientation: "updateOptions",
         gridlines: "updateOptions",
         chartTitle: "updateOptions",
+        backgroundColor: "updateOptions",
         yAxisMin: "updateOptions",
         yAxisMax: "updateOptions"
       },
@@ -202,13 +203,15 @@ A Thelma component providing solution to no problem in particular.
         return value ? "inline-block" : "none";
       },
       getMetaData: function(){
-        var self = this;
-        var labelCols = self.dataSelector._dataAttributes;
-        var valueCols = labelCols.filter(function(attr, index){
-          return self.dataSelector.isNumerical(attr);
-        })
-
-        console.log(valueCols[0]);
+        var self = this,
+            labelCols = Object.keys(self.input[0]) || [],
+            valueCols = labelCols.filter(function(attr, index){
+              return self.$.utility.isColumnNumeric(self.input, attr);
+            });
+        
+        var defaultLabel = labelCols[0],
+            defaultValue = [valueCols[0]];
+  
         return {
           "name": "th-google-bar-chart",
           "description": "Multi Bar Chart by Google",
@@ -216,12 +219,13 @@ A Thelma component providing solution to no problem in particular.
           "version": "0.0.1",
           "inputAttr": {
             "chartTitle":{"friendly":"Title", "type":"string", "default":""},
-            "selectedLabel":{"friendly":"X Values", "type": "single-select", "default": labelCols[0], "values":labelCols},
-            "selectedValues":{"friendly":"Y Values", "type": "multi-select", "default": [], "values":valueCols},
+            "selectedLabel":{"friendly":"X Values", "type": "single-select", "default": defaultLabel, "values":labelCols},
+            "selectedValues":{"friendly":"Y Values", "type": "multi-select", "default": defaultValue, "values":valueCols},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
             "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
             "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
+            "backgroundColor":{"friendly":"Background Color", "type":"color", "default":""},
             "legend":{"friendly":"Show Legend?", "type":"boolean", "default": true}
           }
         }
