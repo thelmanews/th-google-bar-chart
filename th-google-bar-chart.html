@@ -17,13 +17,13 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize hAxisTitle vAxisTitle">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
     <th-data-utility id="utility"></th-data-utility>
     <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}" style="display: {{showOptions | displayFilter}};"></th-u-data-selector>
-    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 85%;"
+    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
           type='column'
           options= "{{options}}"
           data="{{_data}}">
@@ -59,14 +59,21 @@ A Thelma component providing solution to no problem in particular.
         orientation: "updateOptions",
         gridlines: "updateOptions",
         chartTitle: "updateOptions",
+        hAxisTitle: "updateOptions",
+        vAxisTitle: "updateOptions",
+        fontSize: "updateOptions",
         yAxisMin: "updateOptions",
         yAxisMax: "updateOptions"
       },
       ready : function() {
+        var self = this;
         this.dataSelector = this.$.data_selector;
 
         //this._configureOptions();
         this.reformatData();
+document.querySelector('th-lens-composer').addEventListener('th-theme-changed', function(e) {
+          this.updateOptions();
+        }.bind(this));
 
         this.dataSelector.addEventListener('th-data-selection-changed', function() {
           this.labelValueSelection = this.dataSelector.selections;
@@ -138,10 +145,11 @@ A Thelma component providing solution to no problem in particular.
         // Define chart options 
         self.options = {
           title: self.chartTitle,
+          fontSize: self.fontSize,
           subtitle: self.chartSubtitle, // Not an option? Does not work
           orientation: self.orientation,
           colors: colors.accents,
-          backgroundColor: self.backgroundColor || "none",
+          backgroundColor: self.backgroundColor || colors.theme.background||  "none",
           animation: {duration: "500"},
           legend: { 
             position: "bottom",
@@ -155,6 +163,7 @@ A Thelma component providing solution to no problem in particular.
             } 
           },
           vAxis: {
+            title: self.vAxisTitle,
             format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
             gridlines: {
               count: self.gridlines,
@@ -163,6 +172,7 @@ A Thelma component providing solution to no problem in particular.
             maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic"
           },
           hAxis: {
+            title: self.hAxisTitle,
             format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
             gridlines: {
               count: self.gridlines,
@@ -209,7 +219,10 @@ A Thelma component providing solution to no problem in particular.
           "version": "0.0.1",
           "inputAttr": {
             "chartTitle":{"friendly":"Title", "type":"string", "default":""},
+            "vAxisTitle":{"friendly":"Vertical Axis Title", "type":"string", "default":""},
+            "hAxisTitle":{"friendly":"Horizontal Axis Title", "type":"string", "default":""},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
+            "fontSize":{"friendly":"Font Size", "type":"int", "default":""},
             "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
             "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
