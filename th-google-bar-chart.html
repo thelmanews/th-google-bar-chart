@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize chartOptions">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -54,13 +54,16 @@ A Thelma component providing solution to no problem in particular.
       labelValueSelection: null,
       legend: true,
       showOptions: true,
+      chartOptions: { legend: true},
       observe: {
-        legend: "updateOptions",
-        orientation: "updateOptions",
-        gridlines: "updateOptions",
-        chartTitle: "updateOptions",
-        yAxisMin: "updateOptions",
-        yAxisMax: "updateOptions"
+        'legend': "updateOptions",
+        'orientation': "updateOptions",
+        'gridlines': "updateOptions",
+        'chartTitle': "updateOptions",
+        'fontSize': "updateOptions",
+        'yAxisMin': "updateOptions",
+        'chartOptions.legend': "updateOptions",
+        'yAxisMax': "updateOptions"
       },
       ready : function() {
         this.dataSelector = this.$.data_selector;
@@ -139,6 +142,7 @@ A Thelma component providing solution to no problem in particular.
         self.options = {
           title: self.chartTitle,
           subtitle: self.chartSubtitle, // Not an option? Does not work
+          fontSize: self.fontSize,
           orientation: self.orientation,
           colors: colors.accents,
           backgroundColor: self.backgroundColor || "none",
@@ -172,7 +176,7 @@ A Thelma component providing solution to no problem in particular.
           }
         };
 
-        if (!self.legend) { self.options.legend = 'none';}
+        if (!self.chartOptions.legend) { self.options.legend = 'none';}
         
       },
       reset: function(){
@@ -210,10 +214,15 @@ A Thelma component providing solution to no problem in particular.
           "inputAttr": {
             "chartTitle":{"friendly":"Title", "type":"string", "default":""},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
+            "fontSize":{"friendly":"Font Size", "type":"int", "default":""},
             "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
             "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
-            "legend":{"friendly":"Show Legend?", "type":"boolean", "default": true}
+            
+            "chartOptions":{"friendly":"Chart Options", "type":"object", "values": {
+                "legend":{"friendly":"Show Legend?", "type":"boolean", "default": true}
+              }
+            }
           }
         }
       }
