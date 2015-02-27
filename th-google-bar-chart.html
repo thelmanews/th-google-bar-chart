@@ -17,13 +17,13 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize hAxisTitle vAxisTitle">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize hAxisTitle vAxisTitle backgroundColor textColor">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
     <th-data-utility id="utility"></th-data-utility>
-    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}" style="display: {{showOptions | displayFilter}};"></th-u-data-selector>
-    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
+    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}" style="display: {{showOptions | displayFilter}}; height: 10%;"></th-u-data-selector>
+    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: {{showOptions | heightFilter}};"
           type='column'
           options= "{{options}}"
           data="{{_data}}">
@@ -58,6 +58,8 @@ A Thelma component providing solution to no problem in particular.
         legend: "updateOptions",
         orientation: "updateOptions",
         gridlines: "updateOptions",
+        backgroundColor: "updateOptions",
+        textColor: "updateOptions",
         chartTitle: "updateOptions",
         hAxisTitle: "updateOptions",
         vAxisTitle: "updateOptions",
@@ -69,12 +71,15 @@ A Thelma component providing solution to no problem in particular.
         var self = this;
         this.dataSelector = this.$.data_selector;
 
-        //this._configureOptions();
-        this.reformatData();
-document.querySelector('th-lens-composer').addEventListener('th-theme-changed', function(e) {
+        // Listen for theme changes
+        document.addEventListener('th-theme-changed', function(e) {
+          this.getColors();
           this.updateOptions();
         }.bind(this));
 
+        //this._configureOptions();
+        this.reformatData();
+        
         this.dataSelector.addEventListener('th-data-selection-changed', function() {
           this.labelValueSelection = this.dataSelector.selections;
           //set published selections for saving the component
@@ -121,8 +126,6 @@ document.querySelector('th-lens-composer').addEventListener('th-theme-changed', 
 
         firstRow.unshift(self.labelValueSelection[0]);
         self._data.unshift(firstRow);
-
-       
       },
       /**
        * Overrides th-d3-chart function. called by observers when input or chartData changes
@@ -141,21 +144,25 @@ document.querySelector('th-lens-composer').addEventListener('th-theme-changed', 
       configureOptions: function(){
         var self = this,
             colors =  self.getColors();
-        
+
+        var fgColor = self.textColor || colors.theme.foreground1 || "black";
+        var bgColor = self.backgroundColor || colors.theme.background || "none";
+
         // Define chart options 
         self.options = {
           title: self.chartTitle,
+          titleTextStyle: { color: fgColor, fontName: colors.theme.font, fontSize: self.fontSize*1.5},
           fontSize: self.fontSize,
-          subtitle: self.chartSubtitle, // Not an option? Does not work
           orientation: self.orientation,
           colors: colors.accents,
-          backgroundColor: self.backgroundColor || colors.theme.background||  "none",
+          chartArea:{left:'auto',top:'auto', width: '80%', height:'80%'},
+          backgroundColor: bgColor,
           animation: {duration: "500"},
           legend: { 
             position: "bottom",
             alignment: "center",
             textStyle: { 
-              // color: colors.theme.foreground1, 
+              color: fgColor, 
               fontName: colors.theme.font, 
               fontSize: '0.85em',
               stroke: 'none',
@@ -164,21 +171,29 @@ document.querySelector('th-lens-composer').addEventListener('th-theme-changed', 
           },
           vAxis: {
             title: self.vAxisTitle,
+            titleTextStyle: { color: fgColor, fontName: colors.theme.font, fontSize: self.fontSize*1.25},
+            baselineColor: fgColor,
             format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
+            textStyle:{ color: fgColor, fontName: colors.theme.font, fontSize: '0.85em'},
+            minValue: self.orientation === "horizontal" ? self.yAxisMin : "automatic",
+            maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic",
             gridlines: {
               count: self.gridlines,
-            },
-            minValue: self.orientation === "horizontal" ? self.yAxisMin : "automatic",
-            maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic"
+              color: fgColor
+            }
           },
           hAxis: {
             title: self.hAxisTitle,
+            titleTextStyle: { color: fgColor, fontName: colors.theme.font, fontSize: self.fontSize*1.25},
+            baselineColor: fgColor,
             format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
+            textStyle:{ color: fgColor, fontName: colors.theme.font, fontSize: '0.85em'},
+            minValue: self.orientation === "vertical" ? self.yAxisMin : "automatic",
+            maxValue: self.orientation === "vertical" ? self.yAxisMax : "automatic",
             gridlines: {
               count: self.gridlines,
-            },
-            minValue: self.orientation === "vertical" ? self.yAxisMin : "automatic",
-            maxValue: self.orientation === "vertical" ? self.yAxisMax : "automatic"
+              color: fgColor
+            }
           }
         };
 
@@ -211,6 +226,9 @@ document.querySelector('th-lens-composer').addEventListener('th-theme-changed', 
       displayFilter: function(value){
         return value ? "inline-block" : "none";
       },
+      heightFilter: function(value){
+        return value ? "90%" : "100%";
+      },
       getMetaData: function(){
         return {
           "name": "th-google-bar-chart",
@@ -223,6 +241,8 @@ document.querySelector('th-lens-composer').addEventListener('th-theme-changed', 
             "hAxisTitle":{"friendly":"Horizontal Axis Title", "type":"string", "default":""},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
             "fontSize":{"friendly":"Font Size", "type":"int", "default":""},
+            "textColor":{"friendly":"Text Color", "type":"string", "default":""},
+            "backgroundColor":{"friendly":"Background Color", "type":"string", "default":""},
             "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
             "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
