@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize hAxisTitle vAxisTitle backgroundColor textColor">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -58,6 +58,7 @@ A Thelma component providing solution to no problem in particular.
         legend: "updateOptions",
         orientation: "updateOptions",
         gridlines: "updateOptions",
+        gridlinesColor: "updateOptions",
         backgroundColor: "updateOptions",
         textColor: "updateOptions",
         chartTitle: "updateOptions",
@@ -179,7 +180,7 @@ A Thelma component providing solution to no problem in particular.
             maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic",
             gridlines: {
               count: self.gridlines,
-              color: fgColor
+              color: self.gridlinesColors || fgColor
             }
           },
           hAxis: {
@@ -192,7 +193,7 @@ A Thelma component providing solution to no problem in particular.
             maxValue: self.orientation === "vertical" ? self.yAxisMax : "automatic",
             gridlines: {
               count: self.gridlines,
-              color: fgColor
+              color: self.gridlinesColors || fgColor
             }
           }
         };
@@ -241,8 +242,9 @@ A Thelma component providing solution to no problem in particular.
             "hAxisTitle":{"friendly":"Horizontal Axis Title", "type":"string", "default":""},
             "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
             "fontSize":{"friendly":"Font Size", "type":"int", "default":""},
-            "textColor":{"friendly":"Text Color", "type":"string", "default":""},
-            "backgroundColor":{"friendly":"Background Color", "type":"string", "default":""},
+            "textColor":{"friendly":"Text Color", "type":"color", "default":""},
+            "backgroundColor":{"friendly":"Background Color", "type":"color", "default":""},
+            "gridlinesColor":{"friendly":"Gridlines Color", "type":"color", "default":""},
             "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
             "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
             "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
