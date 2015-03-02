@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -65,6 +65,7 @@ A Thelma component providing solution to no problem in particular.
         orientation: "updateOptions",
         gridlines: "updateOptions",
         backgroundColor: "updateOptions",
+        gridlinesColor: "updateOptions",
         textColor: "updateOptions",
         chartTitle: "updateOptions",
         hAxisTitle: "updateOptions",
@@ -242,7 +243,7 @@ A Thelma component providing solution to no problem in particular.
             maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic",
             gridlines: {
               count: self.gridlines,
-              color: fgColor
+              color: self.gridlinesColor || fgColor
             }
           },
           hAxis: {
@@ -255,7 +256,7 @@ A Thelma component providing solution to no problem in particular.
             maxValue: self.orientation === "vertical" ? self.yAxisMax : "automatic",
             gridlines: {
               count: self.gridlines,
-              color: fgColor
+              color: self.gridlinesColor || fgColor
             }
           }
         };
