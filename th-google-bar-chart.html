@@ -17,25 +17,21 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="input chartData output selectedLabel selectedValues orientation legend showOptions labelValueSelection chartTitle chartSubtitle gridlines yAxisMin yAxisMax fontSize hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
     <th-data-utility id="utility"></th-data-utility>
-    <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}" style="display: {{showOptions | displayFilter}}; height: 10%;"></th-u-data-selector>
-    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: {{showOptions | heightFilter}};"
+    <template if="{{!thelma}}">
+      <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}"></th-u-data-selector>
+    </template>
+    <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
           type='column'
           options= "{{options}}"
           data="{{_data}}">
     </google-chart>
   </template>
   <script>
-// TODO 
-// - accept array of arrays as input, and get attributes accordingly
-// - integrate data utility to convert strings
-// - integrate data utility to detect numerical column
-
-
     Polymer({
       // selectedLabel: "Year",
       // selectedValues: ["Sales","Profit"],
@@ -50,16 +46,26 @@ A Thelma component providing solution to no problem in particular.
       //   ["2015", 50, 40],
       //   ["2016", 300, 200]
       // ],
+      // 
+      gridlines: 5,
+      series1Name: '',
+      series2Name: '',
+      labelName: 'year',
+      // chartData: [
+      //   {"label": "2014", "series1": 100, "series2": 50},
+      //   {"label": "2015", "series1": 50, "series2": 40},
+      //   {"label": "2016", "series1": 300, "series2": 200}
+      // ],
       orientation: "horizontal",
       labelValueSelection: null,
       legend: true,
-      showOptions: true,
+      thelma: true, 
       observe: {
         legend: "updateOptions",
         orientation: "updateOptions",
         gridlines: "updateOptions",
-        gridlinesColor: "updateOptions",
         backgroundColor: "updateOptions",
+        gridlinesColor: "updateOptions",
         textColor: "updateOptions",
         chartTitle: "updateOptions",
         hAxisTitle: "updateOptions",
@@ -69,46 +75,55 @@ A Thelma component providing solution to no problem in particular.
         yAxisMax: "updateOptions"
       },
       ready : function() {
-        var self = this;
-        this.dataSelector = this.$.data_selector;
-
-        // Listen for theme changes
-        document.addEventListener('th-theme-changed', function(e) {
-          this.getColors();
-          this.updateOptions();
-        }.bind(this));
-
-        //this._configureOptions();
-        this.reformatData();
-        
-        this.dataSelector.addEventListener('th-data-selection-changed', function() {
-          this.labelValueSelection = this.dataSelector.selections;
-          //set published selections for saving the component
-          this.selectedLabel = this.labelValueSelection[0];
-          this.selectedValues = this.labelValueSelection[1];
+        this.configureOptions();
+        if (this.thelma){
+          this.reformatDataThelma();
+        } else {
           this.reformatData();
-        }.bind(this));
+          this.$.data_selector.addEventListener('th-data-selection-changed', function() {
+            
+            this.labelValueSelection = this.$.data_selector.selections;
+            //set published selections for saving the component
+            this.selectedLabel = this.labelValueSelection[0];
+            this.selectedValues = this.labelValueSelection[1];
+            this.reformatData();
+            
+
+          }.bind(this));
+        }
       },
+
+
       selectedLabelChanged: function() {
-        //if selectedLabel changed from outside, set the internal data_selector    
-        this.dataSelector.selections[0] = this.selectedLabel;
+          //if selectedLabel changed from outside, set the internal data_selector
+          this.$.data_selector.selections[0] = this.selectedLabel;
+
       },
+
       selectedValuesChanged: function() {
-        //if selectedValue changed from outside, set the internal data_selector
-        this.dataSelector.selections[1] = this.selectedValues;
+          //if selectedValue changed from outside, set the internal data_selector
+          this.$.data_selector.selections[1] = this.selectedValues;
+
       },
+
+
       inputChanged: function () {
         var self = this;
         self.chartData = self.input;
-        self.reformatData();
         self.configureOptions();
+        if (self.thelma){
+          self.reformatDataThelma();
+        } else {
+          self.reformatData();
+        }
+        
+        
       },
       /**
        * 'reformatData' converts chartData into the correct data structure for the map
        */
       reformatData: function(){
         var self = this; 
-
 
         if(!self.labelValueSelection || !self.labelValueSelection[0] || !self.labelValueSelection[1]) {
           return;
@@ -127,6 +142,53 @@ A Thelma component providing solution to no problem in particular.
 
         firstRow.unshift(self.labelValueSelection[0]);
         self._data.unshift(firstRow);
+
+       
+      },
+
+      /**
+       * 'reformatDataThelma' converts chartData into the correct data structure using Thelma-composer specific attrs
+       */
+      reformatDataThelma: function(){
+        var self = this; 
+
+        self.labelValueSelection = [self.labelName, []];
+        var seriesNames = [self.series1Name, self.series2Name, self.series3Name];
+        if (self.series1Name && self.series1Name.length > 0  && self.chartData[0].series1){
+          var series1 = true;
+          self.labelValueSelection[1].push(self.series1Name);
+        }
+        if (self.series2Name && self.series2Name.length > 0  && self.chartData[0].series2){
+          var series2 = true;
+          self.labelValueSelection[1].push(self.series2Name);
+        }
+        if (self.series3Name && self.series3Name.length > 0  && self.chartData[0].series3){
+          var series3 = true;
+          self.labelValueSelection[1].push(self.series3Name);
+        }
+
+        var firstRow = self.labelValueSelection[1].map(function(item){ return item;}) ;
+        firstRow.unshift(self.labelValueSelection[0]);
+
+        self._data = self.chartData.map(function(item){
+          var row = [];
+          row.push(item.label);
+          if (series1){
+            var series1val = item.series1 || item.series1 === 0 ? self.$.utility.unformatString(item.series1) : null;
+            row.push(series1val);
+          }
+          if (series2){
+            var series2val = item.series2 || item.series2 === 0 ? self.$.utility.unformatString(item.series2) : null;
+            row.push(series2val);
+          }
+          if (series3){
+            var series3val = item.series3 || item.series3 === 0 ? self.$.utility.unformatString(item.series3) : null;
+           row.push(series3val); 
+          }
+
+          return row;
+        });
+        self._data.unshift(firstRow);       
       },
       /**
        * Overrides th-d3-chart function. called by observers when input or chartData changes
@@ -145,10 +207,10 @@ A Thelma component providing solution to no problem in particular.
       configureOptions: function(){
         var self = this,
             colors =  self.getColors();
-
+        
         var fgColor = self.textColor || colors.theme.foreground1 || "black";
         var bgColor = self.backgroundColor || colors.theme.background || "none";
-
+        
         // Define chart options 
         self.options = {
           title: self.chartTitle,
@@ -162,6 +224,7 @@ A Thelma component providing solution to no problem in particular.
           legend: { 
             position: "bottom",
             alignment: "center",
+            numberFormat: self.numberFormat,
             textStyle: { 
               color: fgColor, 
               fontName: colors.theme.font, 
@@ -224,34 +287,16 @@ A Thelma component providing solution to no problem in particular.
       resize: function() {
         this.$.googleChart.drawChart();
       },
-      displayFilter: function(value){
-        return value ? "inline-block" : "none";
+      series1NameChanged: function(){
+        this.reformatDataThelma();
       },
-      heightFilter: function(value){
-        return value ? "90%" : "100%";
+      series2NameChanged: function(){
+        this.reformatDataThelma();
       },
-      getMetaData: function(){
-        return {
-          "name": "th-google-bar-chart",
-          "description": "Multi Bar Chart by Google",
-          "category":"chart",
-          "version": "0.0.1",
-          "inputAttr": {
-            "chartTitle":{"friendly":"Title", "type":"string", "default":""},
-            "vAxisTitle":{"friendly":"Vertical Axis Title", "type":"string", "default":""},
-            "hAxisTitle":{"friendly":"Horizontal Axis Title", "type":"string", "default":""},
-            "orientation": {"friendly":"Orientation", "type": "dropdown", "default": "horizontal", "values":["horizontal", "vertical"]},
-            "fontSize":{"friendly":"Font Size", "type":"int", "default":""},
-            "textColor":{"friendly":"Text Color", "type":"color", "default":""},
-            "backgroundColor":{"friendly":"Background Color", "type":"color", "default":""},
-            "gridlinesColor":{"friendly":"Gridlines Color", "type":"color", "default":""},
-            "gridlines":{"friendly":"Number of Gridlines", "type":"int", "default":"5"},
-            "yAxisMin":{"friendly":"Y Axis Min", "type":"int", "default":""},
-            "yAxisMax":{"friendly":"Y Axis Max", "type":"int", "default":""},
-            "legend":{"friendly":"Show Legend?", "type":"boolean", "default": true}
-          }
-        }
+      series3NameChanged: function(){
+        this.reformatDataThelma();
       }
+
 
     });
   </script>
