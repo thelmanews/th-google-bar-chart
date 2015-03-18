@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor numberPattern">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -28,7 +28,8 @@ A Thelma component providing solution to no problem in particular.
     <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
           type='column'
           options= "{{options}}"
-          data="{{_data}}">
+          data="{{_data}}"
+          numberFormats="{{numberFormats}}">
     </google-chart>
   </template>
   <script>
@@ -40,26 +41,15 @@ A Thelma component providing solution to no problem in particular.
       //   {"Year": "2015", "Sales": 50, "Profit": 40},
       //   {"Year": "2016", "Sales": 300, "Profit": 200}
       // ],
-      // chartData: [
-      //   ["Year", "Sales","Profit"],
-      //   ["2014", 100, 50],
-      //   ["2015", 50, 40],
-      //   ["2016", 300, 200]
-      // ],
-      // 
       gridlines: 5,
       series1Name: '',
       series2Name: '',
       labelName: 'year',
-      // chartData: [
-      //   {"label": "2014", "series1": 100, "series2": 50},
-      //   {"label": "2015", "series1": 50, "series2": 40},
-      //   {"label": "2016", "series1": 300, "series2": 200}
-      // ],
       orientation: "horizontal",
       labelValueSelection: null,
       legend: true,
       thelma: true, 
+      numberPattern: "",
       observe: {
         legend: "updateOptions",
         orientation: "updateOptions",
@@ -72,7 +62,11 @@ A Thelma component providing solution to no problem in particular.
         vAxisTitle: "updateOptions",
         fontSize: "updateOptions",
         yAxisMin: "updateOptions",
-        yAxisMax: "updateOptions"
+        yAxisMax: "updateOptions",
+        numberPattern:  "updateData",
+        series1Name: "reformatDataThelma",
+        series2Name: "reformatDataThelma",
+        series3Name: "reformatDataThelma"
       },
       ready : function() {
         this.configureOptions();
@@ -92,21 +86,16 @@ A Thelma component providing solution to no problem in particular.
           }.bind(this));
         }
       },
-
-
       selectedLabelChanged: function() {
           //if selectedLabel changed from outside, set the internal data_selector
           this.$.data_selector.selections[0] = this.selectedLabel;
 
       },
-
       selectedValuesChanged: function() {
           //if selectedValue changed from outside, set the internal data_selector
           this.$.data_selector.selections[1] = this.selectedValues;
 
       },
-
-
       inputChanged: function () {
         var self = this;
         self.chartData = self.input;
@@ -116,7 +105,6 @@ A Thelma component providing solution to no problem in particular.
         } else {
           self.reformatData();
         }
-        
         
       },
       /**
@@ -143,15 +131,13 @@ A Thelma component providing solution to no problem in particular.
         firstRow.unshift(self.labelValueSelection[0]);
         self._data.unshift(firstRow);
 
-       
       },
-
       /**
        * 'reformatDataThelma' converts chartData into the correct data structure using Thelma-composer specific attrs
        */
       reformatDataThelma: function(){
         var self = this; 
-
+        self.numberFormats= [];
         self.labelValueSelection = [self.labelName, []];
         var seriesNames = [self.series1Name, self.series2Name, self.series3Name];
         if (self.series1Name && self.series1Name.length > 0  && self.chartData[0].series1){
@@ -170,18 +156,42 @@ A Thelma component providing solution to no problem in particular.
         var firstRow = self.labelValueSelection[1].map(function(item){ return item;}) ;
         firstRow.unshift(self.labelValueSelection[0]);
 
-        self._data = self.chartData.map(function(item){
+        self._data = self.chartData.map(function(item, index){
           var row = [];
           row.push(item.label);
           if (series1){
+            if (index === 0){
+              // Extract the number format of the first row of data and apply to tooltips
+              var format = self.$.utility.extractNumberFormat(item.series1);
+              if (format){
+                self._numberPattern = format.pattern; // Use this pattern to apply to axis numbers 
+                self.numberFormats.push({col: 1, prefix: format.prefix, suffix: format.suffix, groupingSymbol:',', fractionDigits: format.decimalPlaces});
+              }
+            }
             var series1val = item.series1 || item.series1 === 0 ? self.$.utility.unformatString(item.series1) : null;
             row.push(series1val);
           }
           if (series2){
+            if (index === 0){
+              // Extract the number format of the first row of data and apply to tooltips
+              var format = self.$.utility.extractNumberFormat(item.series2);
+              if (format){
+                self._numberPattern = format.pattern; // Use this pattern to apply to axis numbers 
+                self.numberFormats.push({col: 2, prefix: format.prefix, suffix: format.suffix, groupingSymbol:',', fractionDigits: format.decimalPlaces});
+              }
+            }
             var series2val = item.series2 || item.series2 === 0 ? self.$.utility.unformatString(item.series2) : null;
             row.push(series2val);
           }
           if (series3){
+            if (index === 0){
+              // Extract the number format of the first row of data and apply to tooltips
+              var format = self.$.utility.extractNumberFormat(item.series3);
+              if (format){
+                self._numberPattern = format.pattern; // Use this pattern to apply to axis numbers 
+                self.numberFormats.push({col: 3, prefix: format.prefix, suffix: format.suffix, groupingSymbol:',', fractionDigits: format.decimalPlaces});
+              }
+            }
             var series3val = item.series3 || item.series3 === 0 ? self.$.utility.unformatString(item.series3) : null;
            row.push(series3val); 
           }
@@ -189,6 +199,14 @@ A Thelma component providing solution to no problem in particular.
           return row;
         });
         self._data.unshift(firstRow);       
+
+        if (self.numberPattern){
+          self.numberFormats = [];
+          firstRow.forEach(function(item, index){
+            self.numberFormats.push({col: index, pattern: self.numberPattern});
+          })  
+        }
+        
       },
       /**
        * Overrides th-d3-chart function. called by observers when input or chartData changes
@@ -237,7 +255,7 @@ A Thelma component providing solution to no problem in particular.
             title: self.vAxisTitle,
             titleTextStyle: { color: fgColor, fontName: colors.theme.font, fontSize: self.fontSize*1.25},
             baselineColor: fgColor,
-            format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
+            format: self.numberPattern || self._numberPattern || "#,###.##", // numberPattern is exposed as an attribute and _numberPattern is the pattern extracted from data
             textStyle:{ color: fgColor, fontName: colors.theme.font, fontSize: '0.85em'},
             minValue: self.orientation === "horizontal" ? self.yAxisMin : "automatic",
             maxValue: self.orientation === "horizontal" ? self.yAxisMax : "automatic",
@@ -250,7 +268,7 @@ A Thelma component providing solution to no problem in particular.
             title: self.hAxisTitle,
             titleTextStyle: { color: fgColor, fontName: colors.theme.font, fontSize: self.fontSize*1.25},
             baselineColor: fgColor,
-            format: "#,###.##", //TODO: add more options here and figure out how to format numbers in tooltips
+            format: self.numberPattern || self._numberPattern || "#,###.##", // numberPattern is exposed as an attribute and _numberPattern is the pattern extracted from data
             textStyle:{ color: fgColor, fontName: colors.theme.font, fontSize: '0.85em'},
             minValue: self.orientation === "vertical" ? self.yAxisMin : "automatic",
             maxValue: self.orientation === "vertical" ? self.yAxisMax : "automatic",
@@ -286,15 +304,6 @@ A Thelma component providing solution to no problem in particular.
       },
       resize: function() {
         this.$.googleChart.drawChart();
-      },
-      series1NameChanged: function(){
-        this.reformatDataThelma();
-      },
-      series2NameChanged: function(){
-        this.reformatDataThelma();
-      },
-      series3NameChanged: function(){
-        this.reformatDataThelma();
       }
 
 
