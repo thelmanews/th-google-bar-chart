@@ -4,7 +4,7 @@
   "keywords": "thelma, polymer, web-components",
   "main": "th-google-bar-chart.html",
   "dependencies": {
-    "th-animated": "thelmanews/th-d3-chart", 
+    "th-d3-chart": "thelmanews/th-d3-chart", 
     "th-theme": "thelmanews/th-theme",
     "polymer": "Polymer/polymer#~0.5.1",
     "google-chart": "lenses/google-chart#master",
