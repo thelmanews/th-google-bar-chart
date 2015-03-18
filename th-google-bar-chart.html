@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor numberPattern">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor numberPattern chartAreaWidth chartAreaHeight">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -41,6 +41,16 @@ A Thelma component providing solution to no problem in particular.
       //   {"Year": "2015", "Sales": 50, "Profit": 40},
       //   {"Year": "2016", "Sales": 300, "Profit": 200}
       // ],
+      /**
+       * 'chartAreaWidth' refers to the width of the chartarea svg
+       * @type {Number}
+       */
+      chartAreaWidth: '80%',
+      /**
+       * 'chartAreaHeight' refers to the height of the chartarea container
+       * @type {Number}
+       */
+      chartAreaHeight: '80%',
       gridlines: 5,
       series1Name: '',
       series2Name: '',
@@ -227,7 +237,7 @@ A Thelma component providing solution to no problem in particular.
             colors =  self.getColors();
         
         var fgColor = self.textColor || colors.theme.foreground1 || "black";
-        var bgColor = self.backgroundColor || colors.theme.background || "none";
+        var bgColor = self.backgroundColor || "none";
         
         // Define chart options 
         self.options = {
@@ -236,7 +246,7 @@ A Thelma component providing solution to no problem in particular.
           fontSize: self.fontSize,
           orientation: self.orientation,
           colors: colors.accents,
-          chartArea:{left:'auto',top:'auto', width: '80%', height:'80%'},
+          chartArea:{left:'auto',top:'auto', width: self.chartAreaWidth, height:self.chartAreaHeight},
           backgroundColor: bgColor,
           animation: {duration: "500"},
           legend: { 
