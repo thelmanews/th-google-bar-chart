@@ -17,7 +17,7 @@ A Thelma component providing solution to no problem in particular.
 @homepage http://nishacodes.github.io/th-google-bar-chart
 -->
 
-<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor numberPattern chartAreaWidth chartAreaHeight">
+<polymer-element name="th-google-bar-chart" extends="th-d3-chart"  attributes="gridlines input chartData output selectedLabel selectedValues orientation legend thelma series1Name series2Name series3Name yAxisMin yAxisMax fontSize chartTitle hAxisTitle vAxisTitle backgroundColor textColor gridlinesColor numberPattern chartAreaWidth chartAreaHeight barColors">
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
@@ -51,6 +51,18 @@ A Thelma component providing solution to no problem in particular.
        * @type {Number}
        */
       chartAreaHeight: '80%',
+      /**
+       * 'barColors' is an array of colors which correspondent to the bar with the same index.
+       *  Array of objects is used for ease of exposing attribute in Thelma Composer.
+       *
+       *  barColors: [ 
+       *                {'color': '#eee'}, // applies to first bar
+       *                {'color': '#ddd'}  // applies to second bar
+       *              ]
+       * 
+       * @type {Array}
+       */
+      barColors: [],
       gridlines: 5,
       series1Name: '',
       series2Name: '',
@@ -238,6 +250,17 @@ A Thelma component providing solution to no problem in particular.
         
         var fgColor = self.textColor || colors.theme.foreground1 || "black";
         var bgColor = self.backgroundColor || "none";
+        var barColors;
+
+        // Create array of colors, where each color applies to that series index
+        if (self.barColors && self.barColors.length){
+          barColors = self.barColors.map(function(colorObj, i){ 
+            // Sometimes composer returns null instead of object and sometimes "" for color property
+            return colorObj && colorObj.color ? colorObj.color : colors.accents[i];
+          });
+        } else {
+          barColors = colors.accents;
+        }
         
         // Define chart options 
         self.options = {
@@ -245,7 +268,7 @@ A Thelma component providing solution to no problem in particular.
           titleTextStyle: { color: fgColor, fontName: colors.theme.font, fontSize: self.fontSize*1.5},
           fontSize: self.fontSize,
           orientation: self.orientation,
-          colors: colors.accents,
+          colors: barColors,
           chartArea:{left:'auto',top:'auto', width: self.chartAreaWidth, height:self.chartAreaHeight},
           backgroundColor: bgColor,
           animation: {duration: "500"},
