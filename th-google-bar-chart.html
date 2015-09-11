@@ -1,9 +1,10 @@
 <link rel="import" href="../polymer/polymer.html"> 
 <link rel="import" href="../th-d3-chart/th-d3-chart.html"> 
 <link rel="import" href="../google-chart/google-chart.html">
+<!--
 <link rel="import" href="../th-data-utility/th-data-utility.html">
 <link rel="import" href="../th-u-data-selector/th-u-data-selector.html">
-
+-->
 <!--
 A Thelma component providing solution to no problem in particular.
 
@@ -21,10 +22,13 @@ A Thelma component providing solution to no problem in particular.
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="th-google-bar-chart.css">
+    <!--
     <th-data-utility id="utility"></th-data-utility>
     <template if="{{!thelma}}">
       <th-u-data-selector id="data_selector" input="{{chartData}}" selections="{{labelValueSelection}}"></th-u-data-selector>
-    </template>
+            
+        </template>
+        -->
     <google-chart id="googleChart" on-google-chart-render="{{chartReady}}" style="width:100%; height: 100%;"
           type='column'
           options= "{{options}}"
@@ -64,11 +68,11 @@ A Thelma component providing solution to no problem in particular.
        */
       barColors: [],
       gridlines: 5,
-      series1Name: '',
+      series1Name: 'value',
       series2Name: '',
       labelName: 'year',
       orientation: "horizontal",
-      labelValueSelection: null,
+      labelValueSelection: null, /*['label','value'],*/
       legend: true,
       thelma: true, 
       numberPattern: "",
@@ -95,7 +99,8 @@ A Thelma component providing solution to no problem in particular.
         if (this.thelma){
           this.reformatDataThelma();
         } else {
-          this.reformatData();
+        this.reformatData();
+        /*
           this.$.data_selector.addEventListener('th-data-selection-changed', function() {
             
             this.labelValueSelection = this.$.data_selector.selections;
@@ -106,8 +111,10 @@ A Thelma component providing solution to no problem in particular.
             
 
           }.bind(this));
+        */
         }
       },
+      /*
       selectedLabelChanged: function() {
           //if selectedLabel changed from outside, set the internal data_selector
           this.$.data_selector.selections[0] = this.selectedLabel;
@@ -118,6 +125,7 @@ A Thelma component providing solution to no problem in particular.
           this.$.data_selector.selections[1] = this.selectedValues;
 
       },
+      */
       inputChanged: function () {
         var self = this;
         self.chartData = self.input;
@@ -144,7 +152,7 @@ A Thelma component providing solution to no problem in particular.
           var row = [];
           row.push(item[self.labelValueSelection[0]]);
           for(var i=0; i<self.labelValueSelection[1].length; i++){
-            var unformattedValue = self.$.utility.unformatString(item[self.labelValueSelection[1][i]]);
+            var unformattedValue = item.value; //self.$.utility.unformatString(item[self.labelValueSelection[1][i]]);
             row.push(unformattedValue);
           }
           return row;
@@ -184,37 +192,37 @@ A Thelma component providing solution to no problem in particular.
           if (series1){
             if (index === 0){
               // Extract the number format of the first row of data and apply to tooltips
-              var format = self.$.utility.extractNumberFormat(item.series1);
+              var format = null;//self.$.utility.extractNumberFormat(item.series1);
               if (format){
                 self._numberPattern = format.pattern; // Use this pattern to apply to axis numbers 
                 self.numberFormats.push({col: 1, prefix: format.prefix, suffix: format.suffix, groupingSymbol:',', fractionDigits: format.decimalPlaces});
               }
             }
-            var series1val = item.series1 || item.series1 === 0 ? self.$.utility.unformatString(item.series1) : null;
+            var series1val = item.series1 || item.series1 === 0 ? parseFloat(item.series1.replace(/[^0-9.-]+/g, '')) /*self.$.utility.unformatString(item.series1)*/ : null;
             row.push(series1val);
           }
           if (series2){
             if (index === 0){
               // Extract the number format of the first row of data and apply to tooltips
-              var format = self.$.utility.extractNumberFormat(item.series2);
+              var format = null; //self.$.utility.extractNumberFormat(item.series2);
               if (format){
                 self._numberPattern = format.pattern; // Use this pattern to apply to axis numbers 
                 self.numberFormats.push({col: 2, prefix: format.prefix, suffix: format.suffix, groupingSymbol:',', fractionDigits: format.decimalPlaces});
               }
             }
-            var series2val = item.series2 || item.series2 === 0 ? self.$.utility.unformatString(item.series2) : null;
+            var series2val = item.series2 || item.series2 === 0 ? parseFloat(item.series2.replace(/[^0-9.-]+/g, '')) /*self.$.utility.unformatString(item.series2)*/ : null;
             row.push(series2val);
           }
           if (series3){
             if (index === 0){
               // Extract the number format of the first row of data and apply to tooltips
-              var format = self.$.utility.extractNumberFormat(item.series3);
+              var format = null;//self.$.utility.extractNumberFormat(item.series3);
               if (format){
                 self._numberPattern = format.pattern; // Use this pattern to apply to axis numbers 
                 self.numberFormats.push({col: 3, prefix: format.prefix, suffix: format.suffix, groupingSymbol:',', fractionDigits: format.decimalPlaces});
               }
             }
-            var series3val = item.series3 || item.series3 === 0 ? self.$.utility.unformatString(item.series3) : null;
+            var series3val = item.series3 || item.series3 === 0 ? parseFloat(item.series3.replace(/[^0-9.-]+/g, ''))/*self.$.utility.unformatString(item.series3)*/ : null;
            row.push(series3val); 
           }
 
